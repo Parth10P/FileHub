@@ -59,12 +59,12 @@ Every file is tied to a specific user via a foreign key. Users can only access t
 
 | Layer | Technology |
 |---|---|
-| Language | JavaScript |
+| Language | TypeScript |
 | Runtime | Node.js |
 | Framework | Express.js |
 | Database | MongoDB |
 | ODM | Mongoose |
-| Frontend | HTML, CSS, JavaScript |
+| Frontend | HTML, CSS, TypeScript |
 | Auth | JWT (JSON Web Tokens) |
 | File Handling | Multer |
 
@@ -78,7 +78,7 @@ The backend follows a **Controller → Service → Repository** pattern:
 - **Services** contain the business logic — validating uploads, checking ownership, enforcing access rules.
 - **Repositories** talk to the database through Mongoose. No raw queries leak into the business layer.
 
-The codebase uses **OOP principles** in JavaScript:
+The codebase uses **OOP principles** in TypeScript:
 - **Encapsulation** — Database logic is hidden behind Repository classes.
 - **Abstraction** — Clear separation between routes, controllers, services, and data access.
 - **Single Responsibility** — Each module handles one concern only.
@@ -97,11 +97,11 @@ FileHub/
 │   │   ├── models/          # Mongoose schemas & models
 │   │   ├── middlewares/     # Auth guard
 │   │   ├── routes/          # Express route definitions
-│   │   ├── uploads/         # Uploaded file storage
 │   │   ├── utils/           # Helpers (token generation, etc.)
-│   │   └── app.js           # Express app setup
+│   │   └── app.ts           # Express app setup
+│   ├── uploads/             # Uploaded file storage
 │   └── package.json
-├── frontend/                # HTML/CSS/JS client
+├── frontend/                # HTML/CSS/TS client
 ├── idea.md
 ├── useCaseDiagram.md
 ├── sequenceDiagram.md
