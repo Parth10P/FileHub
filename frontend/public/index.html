@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FileHub</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">FileHub</p>
+          <h1>Secure file uploads for your own personal workspace</h1>
+          <p class="subtitle">
+            Sign up, log in, upload files, and manage only your own documents.
+          </p>
+        </div>
+        <div id="messageBox" class="message"></div>
+      </section>
+
+      <section class="grid">
+        <form id="signupForm" class="card">
+          <h2>Sign Up</h2>
+          <input name="name" type="text" placeholder="Name" required />
+          <input name="email" type="email" placeholder="Email" required />
+          <input name="password" type="password" placeholder="Password" required />
+          <button type="submit">Create account</button>
+        </form>
+
+        <form id="loginForm" class="card">
+          <h2>Log In</h2>
+          <input name="email" type="email" placeholder="Email" required />
+          <input name="password" type="password" placeholder="Password" required />
+          <button type="submit">Log in</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Upload File</h2>
+        <form id="uploadForm" class="inline-form">
+          <input id="fileInput" name="file" type="file" required />
+          <button type="submit">Upload</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <h2>My Files</h2>
+          <button id="refreshButton" type="button">Refresh</button>
+        </div>
+        <div id="filesContainer" class="files"></div>
+      </section>
+    </main>
+
+    <script type="module" src="/assets/main.js"></script>
+  </body>
+</html>
