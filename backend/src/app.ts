@@ -33,7 +33,3 @@ app.use("/api/auth", createAuthRouter(authController));
 app.use("/api/files", createFileRouter(fileController));
 
 app.use(errorHandler);
-app.use("/api/auth", createAuthRouter(authController));
-app.use("/api/files", createFileRouter(fileController));
-
-app.use(errorHandler);

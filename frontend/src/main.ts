@@ -5,49 +5,120 @@ interface FileRecord {
   uploadDate: string;
 }
 
-// Use Vite's import.meta.env for environment variables
+// ─── Environment ────────────────────────────────────────────
 const apiBaseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:5001/api";
 const tokenKey = "filehub_token";
 
-const signupForm = document.querySelector<HTMLFormElement>("#signupForm");
+// ─── DOM Elements ───────────────────────────────────────────
+const authOverlay = document.getElementById("authOverlay") as HTMLDivElement;
+const loginCard = document.getElementById("loginCard") as HTMLDivElement;
+const signupCard = document.getElementById("signupCard") as HTMLDivElement;
 const loginForm = document.querySelector<HTMLFormElement>("#loginForm");
+const signupForm = document.querySelector<HTMLFormElement>("#signupForm");
 const uploadForm = document.querySelector<HTMLFormElement>("#uploadForm");
 const refreshButton = document.querySelector<HTMLButtonElement>("#refreshButton");
 const filesContainer = document.querySelector<HTMLDivElement>("#filesContainer");
 const messageBox = document.querySelector<HTMLDivElement>("#messageBox");
 const fileInput = document.querySelector<HTMLInputElement>("#fileInput");
+const authButton = document.getElementById("authButton") as HTMLButtonElement;
+const logoutButton = document.getElementById("logoutButton") as HTMLButtonElement;
+const userGreeting = document.getElementById("userGreeting") as HTMLSpanElement;
 
+const showSignupLink = document.getElementById("showSignup") as HTMLAnchorElement;
+const showLoginLink = document.getElementById("showLogin") as HTMLAnchorElement;
+const authCloseBtn = document.getElementById("authClose") as HTMLButtonElement;
+const authCloseSignupBtn = document.getElementById("authCloseSignup") as HTMLButtonElement;
+
+// ─── Helpers ────────────────────────────────────────────────
 const setMessage = (message: string, type: "success" | "error" = "success"): void => {
-  if (!messageBox) {
-    return;
-  }
-
+  if (!messageBox) return;
   messageBox.textContent = message;
   messageBox.className = `message ${type}`;
 };
 
 const getToken = (): string | null => localStorage.getItem(tokenKey);
-
-const saveToken = (token: string): void => {
-  localStorage.setItem(tokenKey, token);
-};
+const saveToken = (token: string): void => localStorage.setItem(tokenKey, token);
+const clearToken = (): void => localStorage.removeItem(tokenKey);
 
 const request = async <T>(url: string, init?: RequestInit): Promise<T> => {
   const response = await fetch(url, init);
   const data = (await response.json().catch(() => ({}))) as { message?: string } & T;
-
-  if (!response.ok) {
-    throw new Error(data.message ?? "Request failed");
-  }
-
+  if (!response.ok) throw new Error(data.message ?? "Request failed");
   return data;
 };
 
+// ─── Auth Overlay Controls ──────────────────────────────────
+const showAuthOverlay = (mode: "login" | "signup" = "login"): void => {
+  authOverlay.classList.add("active");
+  if (mode === "login") {
+    loginCard.style.display = "";
+    signupCard.style.display = "none";
+  } else {
+    loginCard.style.display = "none";
+    signupCard.style.display = "";
+  }
+};
+
+const hideAuthOverlay = (): void => {
+  authOverlay.classList.remove("active");
+};
+
+const requireAuth = (): string | null => {
+  const token = getToken();
+  if (!token) {
+    showAuthOverlay("login");
+    return null;
+  }
+  return token;
+};
+
+// ─── UI State ───────────────────────────────────────────────
+const updateUIForAuthState = (): void => {
+  const token = getToken();
+  if (token) {
+    authButton.style.display = "none";
+    logoutButton.style.display = "";
+    userGreeting.textContent = "Welcome back!";
+  } else {
+    authButton.style.display = "";
+    logoutButton.style.display = "none";
+    userGreeting.textContent = "";
+  }
+};
+
+// ─── Auth Modal Toggles ────────────────────────────────────
+showSignupLink?.addEventListener("click", (e) => {
+  e.preventDefault();
+  loginCard.style.display = "none";
+  signupCard.style.display = "";
+});
+
+showLoginLink?.addEventListener("click", (e) => {
+  e.preventDefault();
+  signupCard.style.display = "none";
+  loginCard.style.display = "";
+});
+
+authCloseBtn?.addEventListener("click", hideAuthOverlay);
+authCloseSignupBtn?.addEventListener("click", hideAuthOverlay);
+
+authOverlay?.addEventListener("click", (e) => {
+  if (e.target === authOverlay) hideAuthOverlay();
+});
+
+authButton?.addEventListener("click", () => showAuthOverlay("login"));
+
+logoutButton?.addEventListener("click", () => {
+  clearToken();
+  updateUIForAuthState();
+  renderFiles([]);
+  setMessage("Logged out successfully.");
+});
+
+// ─── File Operations ────────────────────────────────────────
 const downloadFile = async (fileId: string, token: string): Promise<void> => {
   const response = await fetch(`${apiBaseUrl}/files/download/${fileId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+    headers: { Authorization: `Bearer ${token}` }
   });
 
   if (!response.ok) {
@@ -67,12 +138,10 @@ const downloadFile = async (fileId: string, token: string): Promise<void> => {
 };
 
 const renderFiles = (files: FileRecord[]): void => {
-  if (!filesContainer) {
-    return;
-  }
+  if (!filesContainer) return;
 
   if (files.length === 0) {
-    filesContainer.innerHTML = "<p>No files uploaded yet.</p>";
+    filesContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">No files uploaded yet.</p>`;
     return;
   }
 
@@ -99,19 +168,20 @@ const loadFiles = async (): Promise<void> => {
   const token = getToken();
   if (!token) {
     renderFiles([]);
-    setMessage("Create an account or log in to start using FileHub.");
     return;
   }
 
-  const files = await request<FileRecord[]>(`${apiBaseUrl}/files`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  renderFiles(files);
+  try {
+    const files = await request<FileRecord[]>(`${apiBaseUrl}/files`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    renderFiles(files);
+  } catch {
+    renderFiles([]);
+  }
 };
 
+// ─── Signup ─────────────────────────────────────────────────
 signupForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const formData = new FormData(signupForm);
@@ -119,9 +189,7 @@ signupForm?.addEventListener("submit", async (event) => {
   try {
     const result = await request<{ token: string }>(`${apiBaseUrl}/auth/signup`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: formData.get("name"),
         email: formData.get("email"),
@@ -130,7 +198,9 @@ signupForm?.addEventListener("submit", async (event) => {
     });
 
     saveToken(result.token);
-    setMessage("Account created successfully.");
+    hideAuthOverlay();
+    updateUIForAuthState();
+    setMessage("Account created successfully!");
     signupForm.reset();
     await loadFiles();
   } catch (error) {
@@ -138,6 +208,7 @@ signupForm?.addEventListener("submit", async (event) => {
   }
 });
 
+// ─── Login ──────────────────────────────────────────────────
 loginForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const formData = new FormData(loginForm);
@@ -145,9 +216,7 @@ loginForm?.addEventListener("submit", async (event) => {
   try {
     const result = await request<{ token: string }>(`${apiBaseUrl}/auth/login`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email: formData.get("email"),
         password: formData.get("password")
@@ -155,7 +224,9 @@ loginForm?.addEventListener("submit", async (event) => {
     });
 
     saveToken(result.token);
-    setMessage("Logged in successfully.");
+    hideAuthOverlay();
+    updateUIForAuthState();
+    setMessage("Logged in successfully!");
     loginForm.reset();
     await loadFiles();
   } catch (error) {
@@ -163,16 +234,13 @@ loginForm?.addEventListener("submit", async (event) => {
   }
 });
 
+// ─── Upload ─────────────────────────────────────────────────
 uploadForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const token = getToken();
+  const token = requireAuth();
+  if (!token) return;
+
   const selectedFile = fileInput?.files?.[0];
-
-  if (!token) {
-    setMessage("Please log in before uploading files.", "error");
-    return;
-  }
-
   if (!selectedFile) {
     setMessage("Please choose a file first.", "error");
     return;
@@ -184,13 +252,11 @@ uploadForm?.addEventListener("submit", async (event) => {
   try {
     await request(`${apiBaseUrl}/files/upload`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
+      headers: { Authorization: `Bearer ${token}` },
       body: formData
     });
 
-    setMessage("File uploaded successfully.");
+    setMessage("File uploaded successfully!");
     uploadForm.reset();
     await loadFiles();
   } catch (error) {
@@ -198,19 +264,21 @@ uploadForm?.addEventListener("submit", async (event) => {
   }
 });
 
+// ─── Refresh ────────────────────────────────────────────────
 refreshButton?.addEventListener("click", () => {
+  const token = requireAuth();
+  if (!token) return;
   void loadFiles().catch((error: Error) => setMessage(error.message, "error"));
 });
 
+// ─── File Actions (Download / Delete) ───────────────────────
 filesContainer?.addEventListener("click", async (event) => {
   const target = event.target as HTMLElement;
   const action = target.dataset.action;
   const fileId = target.dataset.id;
-  const token = getToken();
+  const token = requireAuth();
 
-  if (!action || !fileId || !token) {
-    return;
-  }
+  if (!action || !fileId || !token) return;
 
   if (action === "download") {
     try {
@@ -225,11 +293,9 @@ filesContainer?.addEventListener("click", async (event) => {
     try {
       await request(`${apiBaseUrl}/files/${fileId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
-      setMessage("File deleted successfully.");
+      setMessage("File deleted successfully!");
       await loadFiles();
     } catch (error) {
       setMessage((error as Error).message, "error");
@@ -237,4 +303,6 @@ filesContainer?.addEventListener("click", async (event) => {
   }
 });
 
-void loadFiles().catch((error: Error) => setMessage(error.message, "error"));
+// ─── Init ───────────────────────────────────────────────────
+updateUIForAuthState();
+void loadFiles().catch(() => {});

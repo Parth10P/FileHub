@@ -3,55 +3,102 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FileHub</title>
+    <title>FileHub — Secure File Storage</title>
+    <meta name="description" content="FileHub is a secure personal file storage workspace. Upload, manage, and download your files privately." />
+    <link rel="icon" type="image/png" href="/fileHub_logo.png" />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <main class="page">
-      <section class="hero">
-        <div>
+
+    <!-- ═══════ AUTH OVERLAY (hidden by default) ═══════ -->
+    <div id="authOverlay" class="auth-overlay">
+      <!-- Login Form -->
+      <div id="loginCard" class="auth-card">
+        <button id="authClose" class="auth-close" type="button" title="Close">✕</button>
+        <img src="/fileHub_logo.png" alt="FileHub" class="auth-logo" />
+        <h2>Login</h2>
+        <p class="auth-subtitle">Welcome back, please login to your account</p>
+        <form id="loginForm" class="auth-form">
+          <div class="input-group">
+            <input name="email" type="email" placeholder="Email" required autocomplete="email" />
+            <span class="input-icon">👤</span>
+          </div>
+          <div class="input-group">
+            <input name="password" type="password" placeholder="Password" required autocomplete="current-password" />
+            <span class="input-icon">🔒</span>
+          </div>
+          <button type="submit" class="auth-btn">Login</button>
+        </form>
+        <p class="auth-toggle">Don't have an account? <a id="showSignup">Sign up</a></p>
+      </div>
+
+      <!-- Signup Form -->
+      <div id="signupCard" class="auth-card" style="display: none;">
+        <button id="authCloseSignup" class="auth-close" type="button" title="Close">✕</button>
+        <img src="/fileHub_logo.png" alt="FileHub" class="auth-logo" />
+        <h2>Sign Up</h2>
+        <p class="auth-subtitle">Create an account to start using FileHub</p>
+        <form id="signupForm" class="auth-form">
+          <div class="input-group">
+            <input name="name" type="text" placeholder="Full Name" required autocomplete="name" />
+            <span class="input-icon">👤</span>
+          </div>
+          <div class="input-group">
+            <input name="email" type="email" placeholder="Email" required autocomplete="email" />
+            <span class="input-icon">✉️</span>
+          </div>
+          <div class="input-group">
+            <input name="password" type="password" placeholder="Password" required autocomplete="new-password" />
+            <span class="input-icon">🔒</span>
+          </div>
+          <button type="submit" class="auth-btn">Create Account</button>
+        </form>
+        <p class="auth-toggle">Already have an account? <a id="showLogin">Login</a></p>
+      </div>
+    </div>
+
+    <!-- ═══════ MAIN APP ═══════ -->
+    <div class="app-wrapper">
+      <header class="topbar">
+        <div class="topbar-brand">
+          <img src="/fileHub_logo.png" alt="FileHub" class="topbar-logo" />
+          <span>FileHub</span>
+        </div>
+        <div class="topbar-actions">
+          <span id="userGreeting" class="topbar-user"></span>
+          <button id="authButton" class="btn-accent" type="button">Sign In</button>
+          <button id="logoutButton" class="btn-ghost" type="button" style="display: none;">Log Out</button>
+        </div>
+      </header>
+
+      <main class="page">
+        <section class="hero">
           <p class="eyebrow">FileHub</p>
-          <h1>Secure file uploads for your own personal workspace</h1>
+          <h1>Secure file uploads for your personal workspace</h1>
           <p class="subtitle">
-            Sign up, log in, upload files, and manage only your own documents.
+            Upload, manage, and download your files securely. Sign in to get started.
           </p>
-        </div>
+        </section>
+
+        <section class="card" id="uploadCard">
+          <h2>Upload File</h2>
+          <form id="uploadForm" class="inline-form">
+            <input id="fileInput" name="file" type="file" required />
+            <button type="submit">Upload</button>
+          </form>
+        </section>
+
+        <section class="card" id="filesCard">
+          <div class="section-head">
+            <h2>My Files</h2>
+            <button id="refreshButton" class="btn-ghost" type="button">Refresh</button>
+          </div>
+          <div id="filesContainer" class="files"></div>
+        </section>
+
         <div id="messageBox" class="message"></div>
-      </section>
-
-      <section class="grid">
-        <form id="signupForm" class="card">
-          <h2>Sign Up</h2>
-          <input name="name" type="text" placeholder="Name" required />
-          <input name="email" type="email" placeholder="Email" required />
-          <input name="password" type="password" placeholder="Password" required />
-          <button type="submit">Create account</button>
-        </form>
-
-        <form id="loginForm" class="card">
-          <h2>Log In</h2>
-          <input name="email" type="email" placeholder="Email" required />
-          <input name="password" type="password" placeholder="Password" required />
-          <button type="submit">Log in</button>
-        </form>
-      </section>
-
-      <section class="card">
-        <h2>Upload File</h2>
-        <form id="uploadForm" class="inline-form">
-          <input id="fileInput" name="file" type="file" required />
-          <button type="submit">Upload</button>
-        </form>
-      </section>
-
-      <section class="card">
-        <div class="section-head">
-          <h2>My Files</h2>
-          <button id="refreshButton" type="button">Refresh</button>
-        </div>
-        <div id="filesContainer" class="files"></div>
-      </section>
-    </main>
+      </main>
+    </div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>
