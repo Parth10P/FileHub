@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "description": "TypeScript frontend for FileHub",
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc && vite build",
+    "dev": "vite --port 3000"
   },
   "devDependencies": {
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.2",
+    "vite": "^5.4.1"
   }
 }

@@ -5,7 +5,8 @@ interface FileRecord {
   uploadDate: string;
 }
 
-const apiBaseUrl = "/api";
+// Use Vite's import.meta.env for environment variables
+const apiBaseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:5001/api";
 const tokenKey = "filehub_token";
 
 const signupForm = document.querySelector<HTMLFormElement>("#signupForm");

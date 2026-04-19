@@ -1,5 +1,5 @@
 "use strict";
-const apiBaseUrl = "/api";
+const apiBaseUrl = "http://localhost:5001/api";
 const tokenKey = "filehub_token";
 const signupForm = document.querySelector("#signupForm");
 const loginForm = document.querySelector("#loginForm");

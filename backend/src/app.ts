@@ -1,6 +1,5 @@
 import cors from "cors";
 import express from "express";
-import path from "path";
 import { env } from "./config/env";
 import { AuthController } from "./controllers/AuthController";
 import { FileController } from "./controllers/FileController";
@@ -23,13 +22,8 @@ const fileController = new FileController(fileService);
 
 export const app = express();
 
-app.use(
-  cors({
-    origin: env.frontendOrigin
-  })
-);
+app.use(cors());
 app.use(express.json());
-app.use(express.static(path.resolve(__dirname, "../../frontend/public")));
 
 app.get("/api/health", (_req, res) => {
   res.status(200).json({ message: "FileHub API is running" });
@@ -38,8 +32,8 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/auth", createAuthRouter(authController));
 app.use("/api/files", createFileRouter(fileController));
 
-app.get("/", (_req, res) => {
-  res.sendFile(path.resolve(__dirname, "../../frontend/public/index.html"));
-});
+app.use(errorHandler);
+app.use("/api/auth", createAuthRouter(authController));
+app.use("/api/files", createFileRouter(fileController));
 
 app.use(errorHandler);
